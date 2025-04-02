@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regresión Lineal Simple</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        input {
+            background-color: #333;
+            color: #ffffff;
+            border: 1px solid #555;
+            padding: 8px;
+            margin: 5px;
+            width: 80%;
+            max-width: 300px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        canvas {
+            background-color: #252525;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Regresión Lineal Simple -   Cosme Pontón Oscar
+    </h2>
+    <label for="datosX">Ingrese los datos de X separados por comas:</label>
+    <input type="text" id="datosX" placeholder="Ej: 10,20,30,40">
+    <br>
+    <label for="datosY">Ingrese los datos de Y separados por comas:</label>
+    <input type="text" id="datosY" placeholder="Ej: 5,15,25,35">
+    <br>
+    <button onclick="calcularRegresion()">Calcular Regresión</button>
+    <p id="resultado"></p>
+    <canvas id="grafico"></canvas>
+
+    <script>
+        function calcularRegresion() {
+            let datosX = document.getElementById("datosX").value.split(',').map(Number);
+            let datosY = document.getElementById("datosY").value.split(',').map(Number);
+            
+            if (datosX.length !== datosY.length || datosX.length === 0) {
+                alert("Las listas de datos deben tener la misma cantidad de elementos y no estar vacías.");
+                return;
+            }
+
+            let n = datosX.length;
+            let sumX = datosX.reduce((a, b) => a + b, 0);
+            let sumY = datosY.reduce((a, b) => a + b, 0);
+            let sumXY = datosX.map((x, i) => x * datosY[i]).reduce((a, b) => a + b, 0);
+            let sumX2 = datosX.map(x => x * x).reduce((a, b) => a + b, 0);
+            
+            let b1 = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+            let b0 = (sumY - b1 * sumX) / n;
+            
+            document.getElementById("resultado").innerText = `Ecuación: Y = ${b0.toFixed(4)} + ${b1.toFixed(4)}X`;
+            
+            let ctx = document.getElementById("grafico").getContext("2d");
+            if (window.miGrafico) {
+                window.miGrafico.destroy();
+            }
+            
+            let minX = Math.min(...datosX);
+            let maxX = Math.max(...datosX);
+            let lineaRegresion = [
+                { x: minX, y: b0 + b1 * minX },
+                { x: maxX, y: b0 + b1 * maxX }
+            ];
+
+            window.miGrafico = new Chart(ctx, {
+                type: "scatter",
+                data: {
+                    datasets: [
+                        {
+                            label: "Datos X vs Y",
+                            data: datosX.map((x, i) => ({ x: x, y: datosY[i] })),
+                            backgroundColor: "#4CAF50"
+                        },
+                        {
+                            label: "Línea de Regresión",
+                            data: lineaRegresion,
+                            type: "line",
+                            borderColor: "red",
+                            fill: false,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        x: { 
+                            title: { display: true, text: "Valores X", color: "#ffffff" },
+                            ticks: { color: "#ffffff" }
+                        },
+                        y: { 
+                            title: { display: true, text: "Valores Y", color: "#ffffff" },
+                            ticks: { color: "#ffffff" }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
